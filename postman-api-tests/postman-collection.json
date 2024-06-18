@@ -1,0 +1,372 @@
+{
+	"info": {
+		"_postman_id": "38a40b9b-e3ae-4e0b-ad6a-0cd76ebba07e",
+		"name": "Julia API Testing Implementation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34960460"
+	},
+	"item": [
+		{
+			"name": "Get a list of posts",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Verify status code 200",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Test 2: Verify response is an array",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"// Test 3: Verify response contains at least one post",
+							"pm.test(\"Response contains at least one post\", function () {",
+							"    pm.expect(pm.response.json().length).to.be.at.least(1);",
+							"});",
+							"",
+							"// Test 4: Verify each post has id, title, body, and userId",
+							"pm.test(\"Each post has id, title, body, and userId\", function () {",
+							"    pm.response.json().forEach(function (post) {",
+							"        pm.expect(post).to.have.property('id');",
+							"        pm.expect(post).to.have.property('title');",
+							"        pm.expect(post).to.have.property('body');",
+							"        pm.expect(post).to.have.property('userId');",
+							"    });",
+							"});",
+							"",
+							"// Test 5: Access non-existent resource (expected to fail)",
+							"pm.sendRequest('https://jsonplaceholder.typicode.com/invalid', function (err, res) {",
+							"    pm.test(\"Status code is 404\", function () {",
+							"        pm.expect(res).to.have.status(404);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a specific post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Verify status code 200",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Test 2: Verify response contains the correct id",
+							"pm.test(\"Response contains correct id\", function () {",
+							"    pm.expect(pm.response.json().id).to.eql(1);",
+							"});",
+							"",
+							"// Test 3: Verify response contains title, body, and userId",
+							"pm.test(\"Response contains title, body, and userId\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('title');",
+							"    pm.expect(jsonData).to.have.property('body');",
+							"    pm.expect(jsonData).to.have.property('userId');",
+							"});",
+							"",
+							"// Test 4: Verify id is an integer",
+							"pm.test(\"Id is an integer\", function () {",
+							"    pm.expect(Number.isInteger(pm.response.json().id)).to.be.true;",
+							"});",
+							"",
+							"// Test 5: Access post with non-existent id (expected to fail)",
+							"pm.sendRequest('https://jsonplaceholder.typicode.com/posts/9999', function (err, res) {",
+							"    pm.test(\"Status code is 404\", function () {",
+							"        pm.expect(res).to.have.status(404);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/1",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Verify status code 201",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"// Test 2: Verify response contains the id of the new post",
+							"pm.test(\"Response contains id\", function () {",
+							"    pm.expect(pm.response.json()).to.have.property('id');",
+							"});",
+							"",
+							"// Test 3: Verify response contains title, body, and userId",
+							"pm.test(\"Response contains title, body, and userId\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+							"    pm.expect(jsonData.title).to.eql(requestData.title);",
+							"    pm.expect(jsonData.body).to.eql(requestData.body);",
+							"    pm.expect(jsonData.userId).to.eql(requestData.userId);",
+							"});",
+							"",
+							"// Test 4: Verify id is an integer",
+							"pm.test(\"Id is an integer\", function () {",
+							"    pm.expect(Number.isInteger(pm.response.json().id)).to.be.true;",
+							"});",
+							"",
+							"// Test 5: Create post with invalid data (expected to pass)",
+							"pm.sendRequest({",
+							"    url: 'https://jsonplaceholder.typicode.com/posts',",
+							"    method: 'POST',",
+							"    header: 'Content-Type: application/json',",
+							"    body: {",
+							"        mode: 'raw',",
+							"        raw: JSON.stringify({ invalidField: 'invalidData' })",
+							"    }",
+							"}, function (err, res) {",
+							"    pm.test(\"Status code is 201\", function () {",
+							"        pm.expect(res).to.have.status(201);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"title\": \"java\", \"body\": \"julia\", \"userId\": 1}"
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update a specific post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Verify status code 200",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Test 2: Verify response contains updated title, body, and userId",
+							"pm.test(\"Response contains updated title, body, and userId\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+							"    pm.expect(jsonData.title).to.eql(requestData.title);",
+							"    pm.expect(jsonData.body).to.eql(requestData.body);",
+							"    pm.expect(jsonData.userId).to.eql(requestData.userId);",
+							"});",
+							"",
+							"// Test 3: Verify response contains correct id",
+							"pm.test(\"Response contains correct id\", function () {",
+							"    pm.expect(pm.response.json().id).to.eql(1);",
+							"});",
+							"",
+							"// Test 4: Verify id is an integer",
+							"pm.test(\"Id is an integer\", function () {",
+							"    pm.expect(Number.isInteger(pm.response.json().id)).to.be.true;",
+							"});",
+							"",
+							"// Test 5: Update post with potentially invalid data (expecting success due to JSONPlaceholder limitations)",
+							"pm.sendRequest({",
+							"    url: 'https://jsonplaceholder.typicode.com/posts/1',",
+							"    method: 'PUT',",
+							"    header: {",
+							"        'Content-Type': 'application/json'",
+							"    },",
+							"    body: {",
+							"        mode: 'raw',",
+							"        raw: JSON.stringify({ title: 12345, body: null, userId: \"invalid\" })",
+							"    }",
+							"}, function (err, res) {",
+							"    ",
+							"    // Validate the response structure",
+							"    const jsonData = res.json();",
+							"    pm.test(\"Response has correct properties\", function () {",
+							"        pm.expect(jsonData).to.have.property('title');",
+							"        pm.expect(jsonData).to.have.property('body');",
+							"        pm.expect(jsonData).to.have.property('userId');",
+							"    });",
+							"",
+							"    // Check if title is a number and userId is a string, reflecting our sent invalid data",
+							"    pm.test(\"Title is a number and userId is a string\", function () {",
+							"        pm.expect(jsonData.title).to.be.a('number');",
+							"        pm.expect(jsonData.userId).to.be.a('string');",
+							"    });",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"title\": \"java testing assignment\", \"body\": \"julia psaila\", \"userId\": 1}"
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/1",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete a post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test 1: Verify status code 200",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Test 2: Verify response body is empty",
+							"pm.test(\"Response body is empty\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('object').that.is.empty;",
+							"});",
+							"",
+							"// Test 3: Delete post with non-existent id (expected to pass)",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Test 4: Delete post with invalid id (expected to fail)",
+							"pm.sendRequest({",
+							"    url: 'https://jsonplaceholder.typicode.com/posts/111/111',",
+							"    method: 'DELETE',",
+							"    header: 'Content-Type: application/json',",
+							"    body: {}",
+							"}, function (err, res) {",
+							"    pm.test(\"Status code is 404\", function () {",
+							"    pm.expect(res).to.have.status(404);",
+							"    });",
+							"});",
+							"",
+							"// Test 5: Verify deleted post cannot be retrieved",
+							"pm.sendRequest({",
+							"    url: 'https://jsonplaceholder.typicode.com/posts/111/111',",
+							"    method: 'GET',",
+							"    header: 'Content-Type: application/json',",
+							"    body: {}",
+							"}, function (err, res) {",
+							"    pm.test(\"Status code is 404\", function () {",
+							"    pm.expect(res).to.have.status(404);",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/1",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
