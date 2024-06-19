@@ -20,20 +20,20 @@ pipeline {
             }
         }
 
-        stage('Unit Test') {
+        stage('Postman Tests') {
             agent {
-                                docker {
-                                    image 'postman/newman:alpine'
-                                    args '--entrypoint="" --network=test-automation-demo'
-                                }
-                            }
-                            steps {
-                                echo 'Running Acceptance Tests on Dev ....'
-                                sh 'newman run postman-api-tests/postman-collection.json'
-                            }
+                docker {
+                    image 'postman/newman:alpine'
+                    args '--entrypoint=""'
+                }
+            }
+            steps {
+                echo 'Running Postman API Tests ...'
+                sh 'newman run postman-api-tests/postman-collection.json -r junit --reporter-junit-export postman-api-tests/results.xml'
+            }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit 'postman-api-tests/results.xml'
                 }
             }
         }
@@ -56,7 +56,6 @@ pipeline {
             when {
                 anyOf {
                     branch 'main';
-                    branch pattern: "feature/.*", comparator: "REGEXP"
                     buildingTag()
                 }
             }
@@ -76,8 +75,7 @@ pipeline {
         stage('Dev Environment') {
             when {
                 anyOf {
-                    branch 'main';
-                    branch pattern: "feature/.*", comparator: "REGEXP"
+                    branch 'develop';
                     buildingTag()
                 }
             }
@@ -108,7 +106,12 @@ pipeline {
                             }
                             steps {
                                 echo 'Running Acceptance Tests on Dev ....'
-                                sh 'newman run postman-api-tests/postman-collection.json'
+                                sh 'newman run postman-api-tests/postman-collection.json -r junit --reporter-junit-export postman-api-tests/results.xml'
+                            }
+                            post {
+                                always {
+                                    junit 'postman-api-tests/results.xml'
+                                }
                             }
                         }
                         stage('Dev Performance Tests') {
@@ -124,7 +127,10 @@ pipeline {
 
         stage('Prod Environment') {
             when {
-                buildingTag()
+                anyOf {
+                    branch 'main';
+                    buildingTag()
+                }
             }
             stages {
                 stage('Prod Deploy') {
