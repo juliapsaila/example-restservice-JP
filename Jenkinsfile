@@ -103,7 +103,7 @@ pipeline {
                             agent {
                                 docker {
                                     image 'postman/newman:alpine'
-                                    args '--network=test-automation-demo'
+                                    args '--entrypoint="" --network=test-automation-demo'
                                 }
                             }
                             steps {
