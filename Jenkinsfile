@@ -22,15 +22,15 @@ pipeline {
 
         stage('Unit Test') {
             agent {
-                docker {
-                    image 'maven:3.9-eclipse-temurin-21'
-                    args '-v /root/.m2:/root/.m2'
-                }
-            }
-            steps {
-                echo 'Running Unit Tests ...'
-                sh 'mvn test'
-            }
+                                docker {
+                                    image 'postman/newman:alpine'
+                                    args '--entrypoint="" --network=test-automation-demo'
+                                }
+                            }
+                            steps {
+                                echo 'Running Acceptance Tests on Dev ....'
+                                sh 'newman run postman-api-tests/postman-collection.json'
+                            }
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
